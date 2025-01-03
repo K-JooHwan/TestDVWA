@@ -38,14 +38,18 @@ along with Damn Vulnerable Web Application (DVWA).  If not, see <https://www.gnu
 ## Internationalisation
 
 This file is available in multiple languages:
+
 - Arabic: [العربية](README.ar.md)
 - Chinese: [简体中文](README.zh.md)
 - French: [Français](README.fr.md)
+- Korean: [한국어](README.ko.md)
 - Persian: [فارسی](README.fa.md)
+- Polish: [Polski](README.pl.md)
 - Portuguese: [Português](README.pt.md)
 - Spanish: [Español](README.es.md)
 - Turkish: [Türkçe](README.tr.md)
 - Indonesia: [Indonesia](README.id.md)
+- Vietnamese: [Vietnamese](README.vi.md)
 
 If you would like to contribute a translation, please submit a PR. Note though, this does not mean just run it through Google Translate and send that in, those will be rejected. Submit your translated version by adding a new 'README.xx.md' file where xx is the two-letter code of your desired language (based on [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)).
 
@@ -55,7 +59,7 @@ If you would like to contribute a translation, please submit a PR. Note though, 
 
 While there are various versions of DVWA around, the only supported version is the latest source from the official GitHub repository. You can either clone it from the repo:
 
-```
+```sh
 git clone https://github.com/digininja/DVWA.git
 ```
 
@@ -80,18 +84,31 @@ An automated configuration script for DVWA on Debian-based machines, including K
 
 #### Installation Steps
 
+##### One-Liner
+
+This will download an install script written by [@IamCarron](https://github.com/IamCarron) and run it automatically. This would not be included here if we did not trust the author and the script as it was when we reviewed it, but there is always the chance of someone going rogue, and so if you don't feel safe running someone else's code without reviewing it yourself, follow the manual process and you can review it once downloaded.
+
+```sh
+sudo bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh)"
+```
+
+##### Manually Running the Script
+
 1. **Download the script:**
-   ```bash
+
+   ```sh
    wget https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh
    ```
 
 2. **Make the script executable:**
-   ```bash
+
+   ```sh
    chmod +x Install-DVWA.sh
    ```
 
 3. **Run the script as root:**
-   ```bash
+
+   ```sh
    sudo ./Install-DVWA.sh
    ```
 
@@ -171,6 +188,14 @@ Running `docker compose up -d` should trigger Docker to build an image from loca
 See also: [`pull_policy`](https://github.com/compose-spec/compose-spec/blob/master/05-services.md#pull_policy
 ).
 
+### PHP Versions
+
+Ideally you should be using the latest stable version of PHP as that is the version that this app will be developed and tested on.
+
+Support will not be given for anyone trying to use PHP 5.x.
+
+Versions less than 7.3 have known issues that will cause problems, most of the app will work, but random things may not. Unless you have a very good reason for using such an old version, support will not be given.
+
 ### Linux Packages
 
 If you are using a Debian based Linux distribution, you will need to install the following packages _(or their equivalent)_:
@@ -184,7 +209,7 @@ If you are using a Debian based Linux distribution, you will need to install the
 
 I would recommend doing an update before this, just so you make sure you are going to get the latest version of everything.
 
-```
+```sh
 apt update
 apt install -y apache2 mariadb-server mariadb-client php php-mysqli php-gd libapache2-mod-php
 ```
@@ -203,11 +228,23 @@ On Windows, this can be a bit harder if you are hiding file extensions, if you a
 
 [How to Make Windows Show File Extensions](https://www.howtogeek.com/205086/beginner-how-to-make-windows-show-file-extensions/)
 
+### Config with environment variables
+
+Instead of modifying the configuration file, you can also set most settings using environment variables. In a Docker or Kubernetes deployment, this allows you to modify the configuration without creating a new Docker image. You'll find the variables in the [config/config.inc.php.dist](config/config.inc.php.dist) file.
+
+If you want to set the default security level to "low", simply add the following line to the [compose.yml](./compose.yml) file:
+
+```yml
+environment:
+  - DB_SERVER=db
+  - DEFAULT_SECURITY_LEVEL=low
+```
+
 ### Database Setup
 
 To set up the database, simply click on the `Setup DVWA` button in the main menu, then click on the `Create / Reset Database` button. This will create / reset the database for you with some data in.
 
-If you receive an error while trying to create your database, make sure your database credentials are correct within `./config/config.inc.php`. *This differs from config.inc.php.dist, which is an example file.*
+If you receive an error while trying to create your database, make sure your database credentials are correct within `./config/config.inc.php`. _This differs from config.inc.php.dist, which is an example file._
 
 The variables are set to the following by default:
 
@@ -221,17 +258,17 @@ $_DVWA[ 'db_database' ] = 'dvwa';
 
 Note, if you are using MariaDB rather than MySQL (MariaDB is default in Kali), then you can't use the database root user, you must create a new database user. To do this, connect to the database as the root user then use the following commands:
 
-```mysql
-mysql> create database dvwa;
+```mariadb
+MariaDB [(none)]> create database dvwa;
 Query OK, 1 row affected (0.00 sec)
 
-mysql> create user dvwa@localhost identified by 'p@ssw0rd';
+MariaDB [(none)]> create user dvwa@localhost identified by 'p@ssw0rd';
 Query OK, 0 rows affected (0.01 sec)
 
-mysql> grant all on dvwa.* to dvwa@localhost;
+MariaDB [(none)]> grant all on dvwa.* to dvwa@localhost;
 Query OK, 0 rows affected (0.01 sec)
 
-mysql> flush privileges;
+MariaDB [(none)]> flush privileges;
 Query OK, 0 rows affected (0.00 sec)
 ```
 
@@ -253,19 +290,19 @@ In this state, you can access all the features without needing to log in and set
 
 ### Folder Permissions
 
-* `./hackable/uploads/` - Needs to be writeable by the web service (for File Upload).
+- `./hackable/uploads/` - Needs to be writeable by the web service (for File Upload).
 
-### PHP configuration
+### PHP Configuration
 
 On Linux systems, likely found in `/etc/php/x.x/fpm/php.ini` or `/etc/php/x.x/apache2/php.ini`.
 
-* To allow  Remote File Inclusions (RFI):
-    * `allow_url_include = on` [[allow_url_include](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-include)]
-    * `allow_url_fopen = on` [[allow_url_fopen](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen)]
+- To allow  Remote File Inclusions (RFI):
+  - `allow_url_include = on` [[allow_url_include](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-include)]
+  - `allow_url_fopen = on` [[allow_url_fopen](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen)]
 
-* To make sure PHP shows all error messages:
-    * `display_errors = on` [[display_errors](https://secure.php.net/manual/en/errorfunc.configuration.php#ini.display-errors)]
-    * `display_startup_errors = on` [[display_startup_errors](https://secure.php.net/manual/en/errorfunc.configuration.php#ini.display-startup-errors)]
+- To make sure PHP shows all error messages:
+  - `display_errors = on` [[display_errors](https://secure.php.net/manual/en/errorfunc.configuration.php#ini.display-errors)]
+  - `display_startup_errors = on` [[display_startup_errors](https://secure.php.net/manual/en/errorfunc.configuration.php#ini.display-startup-errors)]
 
 Make sure you restart the php service or Apache after making the changes.
 
@@ -277,8 +314,8 @@ Generated a pair of API keys from <https://www.google.com/recaptcha/admin/create
 
 These then go in the following sections of `./config/config.inc.php`:
 
-* `$_DVWA[ 'recaptcha_public_key' ]`
-* `$_DVWA[ 'recaptcha_private_key' ]`
+- `$_DVWA[ 'recaptcha_public_key' ]`
+- `$_DVWA[ 'recaptcha_private_key' ]`
 
 ### Default Credentials
 
@@ -288,7 +325,7 @@ These then go in the following sections of `./config/config.inc.php`:
 
 _...can easily be brute forced ;)_
 
-Login URL: http://127.0.0.1/login.php
+Login URL: <http://127.0.0.1/login.php>
 
 _Note: This will be different if you installed DVWA into a different directory._
 
@@ -313,14 +350,14 @@ Logs can also be accessed from the terminal.
 1. Open a terminal and change its working directory to DVWA
 2. Show the merged logs
 
-    ```shell
+    ```sh
     docker compose logs
     ```
 
    In case you want to export the logs to a file, e.g. `dvwa.log`
 
-   ```shell
-   docker compose logs >dvwa.log
+   ```sh
+   docker compose logs > dvwa.log
    ```
 
 #### I want to run DVWA on a different port
@@ -368,7 +405,7 @@ On Linux systems Apache generates two log files by default, `access.log` and `er
 
 When submitting error reports, problems, anything like that, please include at least the last five lines from each of these files. On Debian based systems you can get these like this:
 
-```
+```sh
 tail -n 5 /var/log/apache2/access.log /var/log/apache2/error.log
 ```
 
@@ -384,17 +421,23 @@ Linux is by default case sensitive and so in the example above, if you tried to 
 - `http://localhost/mydir/Hello.txt`
 - `http://localhost/MYDIR/hello.txt`
 
-How does this affect DVWA? Most people use git to checkout DVWA into `/var/www/html`, this gives them the directory `/var/www/html/DVWA/` with all the DVWA files inside it. They then browse to `http://localhost/` and get either a `404` or the default Apache welcome page. As the files are in DVWA, you must browse to `http://localhost/DVWA`.
+How does this affect DVWA? Most people use git to clone DVWA into `/var/www/html`, this gives them the directory `/var/www/html/DVWA/` with all the DVWA files inside it. They then browse to `http://localhost/` and get either a `404` or the default Apache welcome page. As the files are in DVWA, you must browse to `http://localhost/DVWA`.
 
 The other common mistake is to browse to `http://localhost/dvwa` which will give a `404` because `dvwa` is not `DVWA` as far as Linux directory matching is concerned.
 
 So after setup, if you try to visit the site and get a `404`, think about where you installed the files to, where they are relative to the document root, and what the case of the directory you used is.
 
+### I browsed to the site and got a blank screen
+
+This is usually one configuration issue hiding another issue. By default, PHP does not display errors, and so if you forgot to turn error display on during the setup process, any other problems, such as failure to connect to the database, will stop the app from loading but the message to tell you what is wrong will be hidden.
+
+To fix this, make sure you set `display_errors` and `display_startup_errors` as covered in [PHP Configuration](#php-configuration) and then restart Apache.
+
 ### "Access denied" running setup
 
 If you see the following when running the setup script it means the username or password in the config file do not match those configured on the database:
 
-```
+```mariadb
 Database Error #1045: Access denied for user 'notdvwa'@'localhost' (using password: YES).
 ```
 
@@ -402,7 +445,7 @@ The error is telling you that you are using the username `notdvwa`.
 
 The following error says you have pointed the config file at the wrong database.
 
-```
+```mariadb
 SQL: Access denied for user 'dvwa'@'localhost' to database 'notdvwa'
 ```
 
@@ -412,15 +455,15 @@ The first thing to do is to double check what you think you put in the config fi
 
 If it matches what you expect, the next thing to do is to check you can log in as the user on the command line. Assuming you have a database user of `dvwa` and a password of `p@ssw0rd`, run the following command:
 
-```
+```sh
 mysql -u dvwa -pp@ssw0rd -D dvwa
 ```
 
-*Note: There is no space after the -p*
+_Note: There is no space after the -p_
 
 If you see the following, the password is correct:
 
-```
+```mariadb
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 14
 Server version: 10.3.22-MariaDB-0ubuntu0.19.10.1 Ubuntu 19.10
@@ -436,19 +479,19 @@ As you can connect on the command line, it is likely something wrong in the conf
 
 If you see the following, the username or password you are using is wrong. Repeat the [Database Setup](#database-setup) steps and make sure you use the same username and password throughout the process.
 
-```
+```mariadb
 ERROR 1045 (28000): Access denied for user 'dvwa'@'localhost' (using password: YES)
 ```
 
 If you get the following, the user credentials are correct but the user does not have access to the database. Again, repeat the setup steps and check the database name you are using.
 
-```
+```mariadb
 ERROR 1044 (42000): Access denied for user 'dvwa'@'localhost' to database 'dvwa'
 ```
 
 The final error you could get is this:
 
-```
+```mariadb
 ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
 ```
 
@@ -462,7 +505,7 @@ sudo service mysql start
 
 An error similar to this one:
 
-```
+```mariadb
 Fatal error: Uncaught mysqli_sql_exception: Connection refused in /var/sites/dvwa/non-secure/htdocs/dvwa/includes/dvwaPage.inc.php:535
 ```
 
@@ -470,19 +513,19 @@ Means your database server is not running or you've got the wrong IP address in 
 
 Check this line in the config file to see where the database server is expected to be:
 
-```
+```php
 $_DVWA[ 'db_server' ]   = '127.0.0.1';
 ```
 
 Then go to this server and check that it is running. In Linux this can be done with:
 
-```
+```sh
 systemctl status mariadb.service
 ```
 
 And you are looking for something like this, the important bit is that it says `active (running)`.
 
-```
+```sh
 ● mariadb.service - MariaDB 10.5.19 database server
      Loaded: loaded (/lib/systemd/system/mariadb.service; enabled; preset: enabled)
      Active: active (running) since Thu 2024-03-14 16:04:25 GMT; 1 week 5 days ago
@@ -490,7 +533,7 @@ And you are looking for something like this, the important bit is that it says `
 
 If it is not running, you can start it with:
 
-```
+```sh
 sudo systemctl stop mariadb.service 
 ```
 
@@ -502,7 +545,7 @@ In Windows, check the status in the XAMPP console.
 
 With the most recent versions of MySQL, PHP can no longer talk to the database in its default configuration. If you try to run the setup script and get the following message it means you have configuration.
 
-```
+```mariadb
 Database Error #2054: The server requested authentication method unknown to the client.
 ```
 
@@ -550,7 +593,7 @@ After all that, the setup process should now work as normal.
 
 If you want more information see the following page: <https://www.php.net/manual/en/mysqli.requirements.php>.
 
-### Database Error #2002: No such file or directory.
+### Database Error #2002: No such file or directory
 
 The database server is not running. In a Debian based distro this can be done with:
 
@@ -576,7 +619,7 @@ Apache may not have high enough privileges to run commands on the web server. If
 
 You may be running into problems with SELinux.  Either disable SELinux or run this command to allow the web server to talk to the database:
 
-```
+```sh
 setsebool -P httpd_can_network_connect_db 1
 ```
 
@@ -615,7 +658,7 @@ I am not going to cover how to get SQLite3 working with PHP, but it should be a 
 
 To make the switch, simply edit the config file and add or edit these lines:
 
-```
+```php
 $_DVWA["SQLI_DB"] = "sqlite";
 $_DVWA["SQLITE_DB"] = "sqli.db";
 ```
@@ -655,4 +698,4 @@ The app has vulnerabilities, it is deliberate. Most are the well documented ones
 
 Project Home: <https://github.com/digininja/DVWA>
 
-*Created by the DVWA team*
+_Created by the DVWA team_
